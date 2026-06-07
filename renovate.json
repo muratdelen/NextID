@@ -1,0 +1,10 @@
+{
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["quay.io/keycloak/keycloak"],
+      "groupName": "keycloak"
+    }
+  ]
+}

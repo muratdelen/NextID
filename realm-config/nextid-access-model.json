@@ -1,0 +1,430 @@
+{
+  "ifResourceExists": "SKIP",
+  "roles": {
+    "realm": [
+      { "name": "NEXTID_SUPERADMIN" },
+      { "name": "NEXTID_ADMIN" },
+      { "name": "NEXTID_APP_SUPERADMIN" },
+
+      { "name": "NEXTID_USER_LIFECYCLE_MANAGER" },
+      { "name": "NEXTID_USER_ACTIVATOR" },
+      { "name": "NEXTID_USER_DEACTIVATOR" },
+      { "name": "NEXTID_ACCESS_MANAGER" },
+
+      { "name": "NEXTID_DEVELOPER" },
+      { "name": "NEXTID_AUDITOR" },
+      { "name": "NEXTID_SUPPORT" },
+      { "name": "NEXTID_USER" },
+
+      { "name": "NEXTID_STUDENT" },
+      { "name": "NEXTID_EMPLOYEE" },
+      { "name": "NEXTID_ACADEMIC_STAFF" },
+      { "name": "NEXTID_ADMINISTRATIVE_STAFF" },
+      { "name": "NEXTID_EXTERNAL_USER" },
+      { "name": "NEXTID_GUEST" }
+    ],
+    "client": {
+      "nextvote": [
+        { "name": "ADMIN" },
+        { "name": "MANAGER" },
+        { "name": "OPERATOR" },
+        { "name": "VIEWER" },
+        { "name": "USER" },
+        { "name": "CREATE_ELECTION" },
+        { "name": "APPROVE_ELECTION" },
+        { "name": "VIEW_RESULTS" },
+        { "name": "EXPORT_RESULTS" }
+      ],
+      "nexttask": [
+        { "name": "ADMIN" },
+        { "name": "MANAGER" },
+        { "name": "ASSIGNEE" },
+        { "name": "VIEWER" },
+        { "name": "USER" },
+        { "name": "CREATE_TASK" },
+        { "name": "ASSIGN_TASK" },
+        { "name": "UPDATE_TASK" },
+        { "name": "VIEW_REPORTS" }
+      ],
+      "nextcollect": [
+        { "name": "ADMIN" },
+        { "name": "DATA_ENTRY" },
+        { "name": "DATA_APPROVER" },
+        { "name": "REPORT_VIEWER" },
+        { "name": "REPORT_MANAGER" },
+        { "name": "USER" },
+        { "name": "APPROVE_DATA" },
+        { "name": "EXPORT_REPORT" }
+      ]
+    }
+  },
+  "clients": [
+    {
+      "clientId": "nextid-admin-api",
+      "name": "NextId Admin API",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false
+    },
+    {
+      "clientId": "nextvote",
+      "name": "NextVote",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "groups"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "nexttask",
+      "name": "NextTask",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "groups"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "nextcollect",
+      "name": "NextCollect",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "groups"
+          }
+        }
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "name": "system",
+      "subGroups": [
+        {
+          "name": "superadmins",
+          "realmRoles": [
+            "NEXTID_SUPERADMIN",
+            "NEXTID_APP_SUPERADMIN",
+            "NEXTID_ADMIN",
+            "NEXTID_USER"
+          ],
+          "clientRoles": {
+            "realm-management": [
+              "realm-admin"
+            ]
+          }
+        },
+        {
+          "name": "admins",
+          "realmRoles": [
+            "NEXTID_ADMIN",
+            "NEXTID_USER"
+          ]
+        },
+        {
+          "name": "user-lifecycle-managers",
+          "realmRoles": [
+            "NEXTID_USER_LIFECYCLE_MANAGER",
+            "NEXTID_USER_ACTIVATOR",
+            "NEXTID_USER_DEACTIVATOR",
+            "NEXTID_ACCESS_MANAGER",
+            "NEXTID_USER"
+          ]
+        },
+        {
+          "name": "developers",
+          "realmRoles": [
+            "NEXTID_DEVELOPER",
+            "NEXTID_USER"
+          ]
+        },
+        {
+          "name": "auditors",
+          "realmRoles": [
+            "NEXTID_AUDITOR",
+            "NEXTID_USER"
+          ]
+        },
+        {
+          "name": "support",
+          "realmRoles": [
+            "NEXTID_SUPPORT",
+            "NEXTID_USER"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "affiliations",
+      "subGroups": [
+        {
+          "name": "students",
+          "realmRoles": [
+            "NEXTID_STUDENT",
+            "NEXTID_USER"
+          ]
+        },
+        {
+          "name": "academic-staff",
+          "realmRoles": [
+            "NEXTID_EMPLOYEE",
+            "NEXTID_ACADEMIC_STAFF",
+            "NEXTID_USER"
+          ]
+        },
+        {
+          "name": "administrative-staff",
+          "realmRoles": [
+            "NEXTID_EMPLOYEE",
+            "NEXTID_ADMINISTRATIVE_STAFF",
+            "NEXTID_USER"
+          ]
+        },
+        {
+          "name": "external-users",
+          "realmRoles": [
+            "NEXTID_EXTERNAL_USER",
+            "NEXTID_USER"
+          ]
+        },
+        {
+          "name": "guests",
+          "realmRoles": [
+            "NEXTID_GUEST",
+            "NEXTID_USER"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "apps",
+      "subGroups": [
+        {
+          "name": "appsuperadmins",
+          "realmRoles": [
+            "NEXTID_APP_SUPERADMIN",
+            "NEXTID_USER"
+          ]
+        },
+        {
+          "name": "nextvote",
+          "subGroups": [
+            {
+              "name": "admins",
+              "clientRoles": {
+                "nextvote": [
+                  "ADMIN",
+                  "CREATE_ELECTION",
+                  "APPROVE_ELECTION",
+                  "VIEW_RESULTS",
+                  "EXPORT_RESULTS"
+                ]
+              }
+            },
+            {
+              "name": "managers",
+              "clientRoles": {
+                "nextvote": [
+                  "MANAGER",
+                  "CREATE_ELECTION",
+                  "VIEW_RESULTS"
+                ]
+              }
+            },
+            {
+              "name": "operators",
+              "clientRoles": {
+                "nextvote": [
+                  "OPERATOR",
+                  "CREATE_ELECTION"
+                ]
+              }
+            },
+            {
+              "name": "viewers",
+              "clientRoles": {
+                "nextvote": [
+                  "VIEWER",
+                  "VIEW_RESULTS"
+                ]
+              }
+            },
+            {
+              "name": "users",
+              "clientRoles": {
+                "nextvote": [
+                  "USER"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "nexttask",
+          "subGroups": [
+            {
+              "name": "admins",
+              "clientRoles": {
+                "nexttask": [
+                  "ADMIN",
+                  "CREATE_TASK",
+                  "ASSIGN_TASK",
+                  "UPDATE_TASK",
+                  "VIEW_REPORTS"
+                ]
+              }
+            },
+            {
+              "name": "managers",
+              "clientRoles": {
+                "nexttask": [
+                  "MANAGER",
+                  "CREATE_TASK",
+                  "ASSIGN_TASK",
+                  "VIEW_REPORTS"
+                ]
+              }
+            },
+            {
+              "name": "assignees",
+              "clientRoles": {
+                "nexttask": [
+                  "ASSIGNEE",
+                  "UPDATE_TASK"
+                ]
+              }
+            },
+            {
+              "name": "viewers",
+              "clientRoles": {
+                "nexttask": [
+                  "VIEWER",
+                  "VIEW_REPORTS"
+                ]
+              }
+            },
+            {
+              "name": "users",
+              "clientRoles": {
+                "nexttask": [
+                  "USER"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "nextcollect",
+          "subGroups": [
+            {
+              "name": "admins",
+              "clientRoles": {
+                "nextcollect": [
+                  "ADMIN",
+                  "DATA_ENTRY",
+                  "DATA_APPROVER",
+                  "REPORT_VIEWER",
+                  "REPORT_MANAGER",
+                  "APPROVE_DATA",
+                  "EXPORT_REPORT"
+                ]
+              }
+            },
+            {
+              "name": "data-entry",
+              "clientRoles": {
+                "nextcollect": [
+                  "DATA_ENTRY"
+                ]
+              }
+            },
+            {
+              "name": "data-approvers",
+              "clientRoles": {
+                "nextcollect": [
+                  "DATA_APPROVER",
+                  "APPROVE_DATA"
+                ]
+              }
+            },
+            {
+              "name": "report-viewers",
+              "clientRoles": {
+                "nextcollect": [
+                  "REPORT_VIEWER"
+                ]
+              }
+            },
+            {
+              "name": "report-managers",
+              "clientRoles": {
+                "nextcollect": [
+                  "REPORT_MANAGER",
+                  "EXPORT_REPORT"
+                ]
+              }
+            },
+            {
+              "name": "users",
+              "clientRoles": {
+                "nextcollect": [
+                  "USER"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

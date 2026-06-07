@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# Java / Maven / Gradle
+target/
+build/
+.gradle/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Docker
+docker-compose.override.yml

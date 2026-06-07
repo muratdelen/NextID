@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: nextlife-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${NEXTLIFE_DB_USER}
+      POSTGRES_PASSWORD: ${NEXTLIFE_DB_PASSWORD}
+      POSTGRES_DB: ${NEXTLIFE_DB_NAME}
+    ports:
+      - "${NEXTLIFE_DB_PORT}:5432"
+    volumes:
+      - nextlife_postgres_data:/var/lib/postgresql/data
+
+  keycloak-db:
+    image: postgres:16
+    container_name: nextlife-keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${NEXTID_DB_NAME}
+      POSTGRES_USER: ${NEXTID_DB_USER}
+      POSTGRES_PASSWORD: ${NEXTID_DB_PASSWORD}
+    volumes:
+      - nextlife_keycloak_data:/var/lib/postgresql/data
+
+  keycloak:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        KEYCLOAK_VERSION: ${KEYCLOAK_VERSION}
+    image: nextid:local
+    container_name: nextlife-keycloak
+    restart: unless-stopped
+    command:
+      - start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${NEXTID_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${NEXTID_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${NEXTID_DB_NAME}
+      KC_DB_USERNAME: ${NEXTID_DB_USER}
+      KC_DB_PASSWORD: ${NEXTID_DB_PASSWORD}
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "${NEXTID_HTTP_PORT}:8080"
+    depends_on:
+      - keycloak-db
+
+volumes:
+  nextlife_postgres_data:
+  nextlife_keycloak_data:

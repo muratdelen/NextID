@@ -1,0 +1,43 @@
+:root {
+  --nextid-primary: #2563eb;
+  --nextid-dark: #0f172a;
+  --nextid-card: #ffffff;
+}
+
+.login-pf body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #2563eb 100%);
+}
+
+#kc-header-wrapper {
+  font-size: 0;
+  padding: 24px 0;
+}
+
+#kc-header-wrapper::after {
+  content: "NextId";
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+#kc-page-title {
+  color: var(--nextid-dark);
+  font-weight: 700;
+}
+
+.pf-v5-c-button.pf-m-primary,
+.pf-c-button.pf-m-primary {
+  background-color: var(--nextid-primary);
+  border-color: var(--nextid-primary);
+}
+
+.pf-v5-c-button.pf-m-primary:hover,
+.pf-c-button.pf-m-primary:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.login-pf-page .card-pf {
+  border-radius: 14px;
+}

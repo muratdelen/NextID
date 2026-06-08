@@ -38,15 +38,15 @@ Token'ın package okuma yetkisi bulunmalıdır.
 ## Başlatma
 
 ```bash
-docker compose --env-file .env -f docker-compose.institution.yml pull
-docker compose --env-file .env -f docker-compose.institution.yml up -d
+docker compose --env-file .env pull
+docker compose --env-file .env up -d
 ```
 
 Servis durumunu görüntülemek için:
 
 ```bash
-docker compose --env-file .env -f docker-compose.institution.yml ps
-docker compose --env-file .env -f docker-compose.institution.yml logs -f nextid-core
+docker compose --env-file .env ps
+docker compose --env-file .env logs -f nextid-core
 ```
 
 Varsayılan adres `http://localhost:8080` değeridir.
@@ -62,9 +62,13 @@ NEXTID_CORE_IMAGE_TAG=26.6.3-nextid
 Ardından image'ı çekip servisi yeniden oluşturun:
 
 ```bash
-docker compose --env-file .env -f docker-compose.institution.yml pull nextid-core
-docker compose --env-file .env -f docker-compose.institution.yml up -d nextid-core
+docker compose --env-file .env pull nextid-core
+docker compose --env-file .env up -d nextid-core
+docker compose --env-file .env logs -f nextid-core
 ```
+
+Son komut NextId Core başlangıç loglarını canlı olarak gösterir. Log takibinden
+çıkmak container'ı durdurmaz; terminalde `Ctrl+C` kullanabilirsiniz.
 
 ## Runtime Değişkenleri
 
@@ -78,9 +82,42 @@ Yönetim endpoint'leri varsayılan olarak container içindeki `9000` portundadı
 
 ## Durdurma
 
+Tüm NextId container'larını verileri koruyarak durdurmak için:
+
 ```bash
-docker compose --env-file .env -f docker-compose.institution.yml down
+docker compose --env-file .env stop
 ```
 
-Veritabanı volume'unu da silmek kalıcı veriyi yok eder. Yalnızca bilinçli bir
-sıfırlama işleminde `down -v` kullanın.
+Yalnızca NextId Core container'ını durdurmak için:
+
+```bash
+docker compose --env-file .env stop nextid-core
+```
+
+Yalnızca veritabanı container'ını durdurmak için:
+
+```bash
+docker compose --env-file .env stop nextid-db
+```
+
+Durdurulan container'ları tekrar başlatmak için:
+
+```bash
+docker compose --env-file .env start
+```
+
+Container'ları ve oluşturulan ağı kaldırmak, ancak veritabanı volume'unu
+korumak için:
+
+```bash
+docker compose --env-file .env down
+```
+
+Container'larla birlikte veritabanı volume'unu da silmek için:
+
+```bash
+docker compose --env-file .env down -v
+```
+
+`down -v` kalıcı veritabanı verilerini siler. Bu komutu yalnızca bilinçli bir
+tam sıfırlama işleminde kullanın.

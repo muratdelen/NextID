@@ -1,26 +1,25 @@
-# NextId themes
+# NextId Teması
 
-Keycloak 26.6.3 parent themes:
+NextId Core tarafından kullanılan teknik parent temalar:
 
 - Login: `keycloak.v2`
 - Account: `keycloak.v3`
 - Admin: `keycloak.v2`
 
-Build and start:
+Servisi başlatma:
 
 ```bash
-docker compose down
-docker compose build --no-cache nextid
 docker compose up -d
 docker compose ps
-docker compose logs --tail=100 nextid
+docker compose logs --tail=100 nextid-core
 ```
 
-Verify the installed theme files:
+Tema dosyalarını doğrulama:
 
 ```bash
-docker exec nextid find /opt/keycloak/themes/nextid -maxdepth 5 -type f | sort
+docker exec "${COMPOSE_PROJECT_NAME:-nextid}-core" \
+  find /opt/keycloak/themes/nextid -maxdepth 5 -type f | sort
 ```
 
-In **Realm settings > Themes**, select `nextid` for Login theme,
-Account theme, and Admin console theme.
+Yönetim arayüzündeki **Realm settings > Themes** bölümünde Login, Account ve
+Admin console temaları için `nextid` seçin.

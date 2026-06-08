@@ -1,45 +1,35 @@
 # NextId
 
-NextId is a Keycloak-based identity and access management distribution customized for NextLife applications.
+NextId, NextLife uygulamaları için merkezi kimlik ve erişim yönetimi
+dağıtımıdır. Paket; NextId Core, PostgreSQL, özel tema ve Docker Compose
+yapılandırmalarını içerir.
 
-## Türkçe
+## Bileşenler
 
-NextId, NextLife ekosistemi için özelleştirilmiş Keycloak tabanlı merkezi kimlik ve erişim yönetimi dağıtımıdır.
+- `nextid-core`: Kimlik, oturum ve yetkilendirme servisi
+- `nextid-db`: PostgreSQL veritabanı
+- `themes/nextid`: NextId kullanıcı arayüzü teması
 
-Tek oturum açma, merkezi kullanıcı yönetimi, rol tabanlı yetkilendirme, özel giriş teması ve ileride özel provider eklentileri için temel yapı sağlar.
-
-## Features
-
-- Keycloak-based authentication
-- Centralized identity management
-- Single Sign-On
-- Role-based access control
-- Custom NextId login theme
-- Docker-based deployment
-- PostgreSQL support
-
-## Local Development
+## Yerel Çalıştırma
 
 ```bash
-docker compose up -d --build
-cat > .github/workflows/docker-publish.yml <<'EOF'
-name: Build NextId Docker Image
+cp .env.example .env
+docker compose up -d
+```
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+Servis varsayılan olarak `http://localhost:8080` adresinde çalışır.
 
-jobs:
-  docker-build:
-    runs-on: ubuntu-latest
+## Kurumsal Kurulum
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+Kurumsal ortamlar için
+[`docs/INSTITUTION_DOCKER_SETUP.md`](docs/INSTITUTION_DOCKER_SETUP.md)
+belgesini kullanın.
 
-      - name: Build Docker image
-        run: docker build -t nextid:local .
+Dağıtım doğrudan aşağıdaki NextId Core image'ını kullanır:
+
+```text
+ghcr.io/muratdelen/nextid-core:${NEXTID_CORE_IMAGE_TAG:-latest}
+```
+
+NextId-Core, Keycloak tabanlı bir fork olduğu için bazı düşük seviyeli runtime
+değişkenlerinde `KC_` prefix'i korunur.

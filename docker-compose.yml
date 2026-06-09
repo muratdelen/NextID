@@ -1,18 +1,47 @@
+# =========================================================
+# NextLife Platform Docker Compose
+# Çalıştırma:
+#   docker compose up -d
+#
+# Logları izleme:
+#   docker compose logs -f
+#
+# Sadece NextID log:
+#   docker compose logs -f nextid-core
+#
+# Durdurma:
+#   docker compose down
+#
+# Verilerle birlikte tamamen silme:
+#   docker compose down -v
+#
+# Yeniden build ederek başlatma:
+#   docker compose up -d --build
+# =========================================================
+
 services:
+  # =========================================================
+  # NEXTID DATABASE
+  # =========================================================
   nextid-db:
     image: postgres:16
-    container_name: ${COMPOSE_PROJECT_NAME:-nextid}-db
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-nextid-db
     environment:
       POSTGRES_DB: ${NEXTID_DB_NAME}
       POSTGRES_USER: ${NEXTID_DB_USER}
       POSTGRES_PASSWORD: ${NEXTID_DB_PASSWORD}
     volumes:
       - nextid_db_data:/var/lib/postgresql/data
+    networks:
+      - nextlife-net
     restart: unless-stopped
 
+  # =========================================================
+  # NEXTID / KEYCLOAK
+  # =========================================================
   nextid-core:
     image: ghcr.io/muratdelen/nextid-core:${NEXTID_CORE_IMAGE_TAG:-latest}
-    container_name: ${COMPOSE_PROJECT_NAME:-nextid}-core
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-nextid-core
     depends_on:
       - nextid-db
     environment:
@@ -28,11 +57,236 @@ services:
     ports:
       - "${NEXTID_HTTP_PORT:-8080}:8080"
     volumes:
-      - ./themes/nextid:/opt/keycloak/themes/nextid:ro
+      - ./identity/nextid/themes/nextid:/opt/keycloak/themes/nextid:ro
     command:
       - start
       - --optimized
+    networks:
+      - nextlife-net
     restart: unless-stopped
+
+  # =========================================================
+  # MAIN PLATFORM DATABASE
+  # NextCore, NextRole, NextLog, NextData vb.
+  # =========================================================
+  nextlife-db:
+    image: postgres:16
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-db
+    environment:
+      POSTGRES_DB: ${NEXTLIFE_DB_NAME:-nextlife}
+      POSTGRES_USER: ${NEXTLIFE_DB_USER:-nextlife}
+      POSTGRES_PASSWORD: ${NEXTLIFE_DB_PASSWORD:-nextlife123}
+    ports:
+      - "${NEXTLIFE_DB_PORT:-5433}:5432"
+    volumes:
+      - nextlife_db_data:/var/lib/postgresql/data
+    networks:
+      - nextlife-net
+    restart: unless-stopped
+
+  # =========================================================
+  # REDIS
+  # Cache, queue, session helper
+  # =========================================================
+  next-redis:
+    image: redis:7
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nextlife-net
+    restart: unless-stopped
+
+  # =========================================================
+  # MINIO
+  # NextStorage / NextDocs dosya depolama
+  # =========================================================
+  next-minio:
+    image: minio/minio:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-nextlife}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-nextlife123}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - nextlife-net
+    restart: unless-stopped
+
+  # =========================================================
+  # NEXT GATEWAY
+  # API Gateway
+  # =========================================================
+  next-gateway:
+    build:
+      context: ./services/next-gateway
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-gateway
+    depends_on:
+      - nextid-core
+    environment:
+      SERVER_PORT: 8081
+      NEXTID_ISSUER_URI: ${NEXTID_ISSUER_URI:-http://nextid-core:8080/realms/nextlife}
+    ports:
+      - "${NEXT_GATEWAY_PORT:-8081}:8081"
+    networks:
+      - nextlife-net
+    restart: unless-stopped
+
+  # =========================================================
+  # NEXT CORE SERVICE
+  # NextTenant, NextOrg, NextPerson, NextConfig, NextLicense
+  # =========================================================
+  next-core-service:
+    build:
+      context: ./services/next-core-service
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-core-service
+    depends_on:
+      - nextlife-db
+      - nextid-core
+    environment:
+      SERVER_PORT: 8090
+      SPRING_DATASOURCE_URL: jdbc:postgresql://nextlife-db:5432/${NEXTLIFE_DB_NAME:-nextlife}
+      SPRING_DATASOURCE_USERNAME: ${NEXTLIFE_DB_USER:-nextlife}
+      SPRING_DATASOURCE_PASSWORD: ${NEXTLIFE_DB_PASSWORD:-nextlife123}
+      NEXTID_BASE_URL: http://nextid-core:8080
+    ports:
+      - "${NEXT_CORE_PORT:-8090}:8090"
+    networks:
+      - nextlife-net
+    restart: unless-stopped
+
+  # =========================================================
+  # NEXT ROLE SERVICE
+  # NextRole, NextPolicy, NextAudit
+  # =========================================================
+  next-role-service:
+    build:
+      context: ./services/next-role-service
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-role-service
+    depends_on:
+      - nextlife-db
+      - nextid-core
+      - next-core-service
+    environment:
+      SERVER_PORT: 8091
+      SPRING_DATASOURCE_URL: jdbc:postgresql://nextlife-db:5432/${NEXTLIFE_DB_NAME:-nextlife}
+      SPRING_DATASOURCE_USERNAME: ${NEXTLIFE_DB_USER:-nextlife}
+      SPRING_DATASOURCE_PASSWORD: ${NEXTLIFE_DB_PASSWORD:-nextlife123}
+      NEXTID_BASE_URL: http://nextid-core:8080
+    ports:
+      - "${NEXT_ROLE_PORT:-8091}:8091"
+    networks:
+      - nextlife-net
+    restart: unless-stopped
+
+  # =========================================================
+  # NEXT LOG SERVICE
+  # NextLog
+  # =========================================================
+  next-log-service:
+    build:
+      context: ./services/next-log-service
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-log-service
+    depends_on:
+      - nextlife-db
+      - next-redis
+    environment:
+      SERVER_PORT: 8092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://nextlife-db:5432/${NEXTLIFE_DB_NAME:-nextlife}
+      SPRING_DATASOURCE_USERNAME: ${NEXTLIFE_DB_USER:-nextlife}
+      SPRING_DATASOURCE_PASSWORD: ${NEXTLIFE_DB_PASSWORD:-nextlife123}
+      REDIS_HOST: next-redis
+      REDIS_PORT: 6379
+    ports:
+      - "${NEXT_LOG_PORT:-8092}:8092"
+    networks:
+      - nextlife-net
+    restart: unless-stopped
+
+  # =========================================================
+  # NEXT DATA SERVICE
+  # NextData, NextCatalog, NextQuality, NextImportExport
+  # =========================================================
+  next-data-service:
+    build:
+      context: ./services/next-data-service
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-data-service
+    depends_on:
+      - nextlife-db
+      - next-minio
+    environment:
+      SERVER_PORT: 8093
+      SPRING_DATASOURCE_URL: jdbc:postgresql://nextlife-db:5432/${NEXTLIFE_DB_NAME:-nextlife}
+      SPRING_DATASOURCE_USERNAME: ${NEXTLIFE_DB_USER:-nextlife}
+      SPRING_DATASOURCE_PASSWORD: ${NEXTLIFE_DB_PASSWORD:-nextlife123}
+      MINIO_ENDPOINT: http://next-minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-nextlife}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-nextlife123}
+    ports:
+      - "${NEXT_DATA_PORT:-8093}:8093"
+    networks:
+      - nextlife-net
+    restart: unless-stopped
+
+  # =========================================================
+  # NEXT FLOW SERVICE
+  # NextFlow, NextAsset
+  # =========================================================
+  next-flow-service:
+    build:
+      context: ./services/next-flow-service
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-flow-service
+    depends_on:
+      - nextlife-db
+      - next-redis
+    environment:
+      SERVER_PORT: 8094
+      SPRING_DATASOURCE_URL: jdbc:postgresql://nextlife-db:5432/${NEXTLIFE_DB_NAME:-nextlife}
+      SPRING_DATASOURCE_USERNAME: ${NEXTLIFE_DB_USER:-nextlife}
+      SPRING_DATASOURCE_PASSWORD: ${NEXTLIFE_DB_PASSWORD:-nextlife123}
+      REDIS_HOST: next-redis
+      REDIS_PORT: 6379
+    ports:
+      - "${NEXT_FLOW_PORT:-8094}:8094"
+    networks:
+      - nextlife-net
+    restart: unless-stopped
+
+  # =========================================================
+  # NEXT ADMIN UI
+  # Angular yönetim paneli
+  # =========================================================
+  next-admin-ui:
+    build:
+      context: ./apps/next-admin-ui
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-nextlife}-admin-ui
+    depends_on:
+      - next-gateway
+    ports:
+      - "${NEXT_ADMIN_UI_PORT:-4200}:80"
+    networks:
+      - nextlife-net
+    restart: unless-stopped
+
+networks:
+  nextlife-net:
+    driver: bridge
 
 volumes:
   nextid_db_data:
+  nextlife_db_data:
+  redis_data:
+  minio_data:

@@ -1,0 +1,38 @@
+services:
+  nextid-db:
+    image: postgres:16
+    container_name: ${COMPOSE_PROJECT_NAME:-nextid}-db
+    environment:
+      POSTGRES_DB: ${NEXTID_DB_NAME}
+      POSTGRES_USER: ${NEXTID_DB_USER}
+      POSTGRES_PASSWORD: ${NEXTID_DB_PASSWORD}
+    volumes:
+      - nextid_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  nextid-core:
+    image: ghcr.io/muratdelen/nextid-core:${NEXTID_CORE_IMAGE_TAG:-latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-nextid}-core
+    depends_on:
+      - nextid-db
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://nextid-db:5432/${NEXTID_DB_NAME}
+      KC_DB_USERNAME: ${NEXTID_DB_USER}
+      KC_DB_PASSWORD: ${NEXTID_DB_PASSWORD}
+      KC_HOSTNAME: ${NEXTID_HOSTNAME:-http://localhost:8080}
+      KC_HTTP_ENABLED: ${NEXTID_HTTP_ENABLED:-true}
+      KC_PROXY_HEADERS: ${NEXTID_PROXY_HEADERS:-xforwarded}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${NEXTID_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${NEXTID_ADMIN_PASSWORD}
+    ports:
+      - "${NEXTID_HTTP_PORT:-8080}:8080"
+    volumes:
+      - ./themes/nextid:/opt/keycloak/themes/nextid:ro
+    command:
+      - start
+      - --optimized
+    restart: unless-stopped
+
+volumes:
+  nextid_db_data:

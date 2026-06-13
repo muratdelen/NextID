@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.muratdelen.nextid</groupId>
+    <artifactId>nextid-nextlog-listener</artifactId>
+    <version>0.1.0</version>
+    <packaging>jar</packaging>
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+        <nextid.version>26.6.3</nextid.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-server-spi</artifactId>
+            <version>${nextid.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-server-spi-private</artifactId>
+            <version>${nextid.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

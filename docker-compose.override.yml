@@ -1,12 +1,3 @@
-# =========================================================
-# NextID + NextLog kalıcı entegrasyon katmanı
-#
-# Docker Compose bu dosyayı otomatik okur.
-# nextid-core image build edilirken NextLog listener jar dosyası
-# otomatik olarak /opt/keycloak/providers içine eklenir.
-# Final image adı özellikle ghcr.io/muratdelen/nextid-core:latest olarak kalır.
-# =========================================================
-
 services:
   nextid-core:
     build:
@@ -16,6 +7,8 @@ services:
         NEXTID_CORE_IMAGE_TAG: ${NEXTID_CORE_BASE_IMAGE_TAG:-latest}
     image: ghcr.io/muratdelen/nextid-core:${NEXTID_CORE_IMAGE_TAG:-latest}
     environment:
-      NEXTLOG_AUDIT_URL: ${NEXTLOG_AUDIT_URL:-http://next-log-service:8092/api/audit-events}
+      NEXTLOG_AUDIT_URL: ${NEXTLOG_AUDIT_URL:-http://nextlog.harran.edu.tr/api/audit-events}
       NEXTLOG_MODULE: ${NEXTLOG_MODULE:-nextid}
       NEXTLOG_INGEST_API_KEY: ${NEXTLOG_INGEST_API_KEY:-dev-nextlog-secret}
+    extra_hosts:
+      - "nextlog.harran.edu.tr:host-gateway"

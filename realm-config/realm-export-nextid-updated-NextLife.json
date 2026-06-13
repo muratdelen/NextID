@@ -2270,12 +2270,14 @@
   "accountTheme": "nextid",
   "adminTheme": "nextid",
   "emailTheme": "nextid",
-  "eventsEnabled": false,
+  "eventsEnabled": true,
   "eventsListeners": [
-    "jboss-logging"
+    "jboss-logging",
+    "email",
+    "nextid-audit-listener"
   ],
   "enabledEventTypes": [],
-  "adminEventsEnabled": false,
+  "adminEventsEnabled": true,
   "adminEventsDetailsEnabled": false,
   "identityProviders": [],
   "identityProviderMappers": [],

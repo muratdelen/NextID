@@ -5,18 +5,12 @@ import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 
 public class NextIdEventListenerProvider implements EventListenerProvider {
 
-    private static final String DEFAULT_NEXTLOG_URL = "http://nextlog-core:8095/api/audit-events";
     private static final String DEFAULT_MODULE = "nextid";
 
     private static final Set<EventType> ALLOWED_USER_EVENTS = Set.of(
@@ -38,7 +32,7 @@ public class NextIdEventListenerProvider implements EventListenerProvider {
             EventType.CLIENT_LOGIN_ERROR
     );
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final NextLogAuditClient auditClient = new NextLogAuditClient();
 
     @Override
     public void onEvent(Event event) {
@@ -117,27 +111,7 @@ public class NextIdEventListenerProvider implements EventListenerProvider {
     }
 
     private void send(String json) {
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(nextLogUrl()))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .build();
-
-            httpClient.send(request, HttpResponse.BodyHandlers.discarding());
-        } catch (IOException | InterruptedException e) {
-            System.err.println("NextID audit send failed: " + e.getMessage());
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-        } catch (Exception e) {
-            System.err.println("NextID audit unexpected error: " + e.getMessage());
-        }
-    }
-
-    private String nextLogUrl() {
-        String value = System.getenv("NEXTLOG_AUDIT_URL");
-        return hasText(value) ? value : DEFAULT_NEXTLOG_URL;
+        auditClient.send(json);
     }
 
     private String module() {

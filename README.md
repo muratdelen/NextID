@@ -25,11 +25,11 @@ Kurumsal ortamlar için
 [`docs/INSTITUTION_DOCKER_SETUP.md`](docs/INSTITUTION_DOCKER_SETUP.md)
 belgesini kullanın.
 
-Dağıtım doğrudan aşağıdaki NextId Core image'ını kullanır:
+Dağıtım doğrudan aşağıdaki NextId image'ını kullanır:
 
 ```text
-ghcr.io/muratdelen/nextid-core:${NEXTID_CORE_IMAGE_TAG:-latest}
+ghcr.io/muratdelen/nextid:${NEXTID_CORE_IMAGE_TAG:-latest}
 ```
 
-NextId-Core, Keycloak tabanlı bir fork olduğu için bazı düşük seviyeli runtime
+NextId, Keycloak tabanlı olduğu için bazı düşük seviyeli runtime
 değişkenlerinde `KC_` prefix'i korunur.

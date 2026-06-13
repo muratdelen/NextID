@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
 
   nextid-core:
-    image: ghcr.io/muratdelen/nextid-core:${NEXTID_CORE_IMAGE_TAG:-latest}
+    image: ghcr.io/muratdelen/nextid:${NEXTID_CORE_IMAGE_TAG:-latest}
     container_name: ${COMPOSE_PROJECT_NAME:-nextid}-core
     depends_on:
       - nextid-db

@@ -37,6 +37,5 @@ services:
       - start
       - --optimized
     restart: unless-stopped
-
 volumes:
   nextid_db_data:
